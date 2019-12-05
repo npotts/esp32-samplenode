@@ -1,0 +1,13 @@
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/esp32
+    docker:
+      - image: espressif/idf
+    steps:
+      - checkout
+      - run:
+          name: Build
+          working_directory: "esp32"
+          command: |
+            make
