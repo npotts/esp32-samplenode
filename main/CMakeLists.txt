@@ -2,7 +2,7 @@
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
-set(COMPONENT_SRCS "wifi-cfg.c wxsensors.c main.c")
+set(COMPONENT_SRCS *.c)
 set(COMPONENT_ADD_INCLUDEDIRS "")
 
 register_component()

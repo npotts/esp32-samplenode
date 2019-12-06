@@ -78,7 +78,6 @@
 #define SI7021_REV_1					0xff  /**< Sensor revision 1 */
 #define SI7021_REV_2					0x20  /**< Sensor revision 2 */
 
-
 esp_err_t init_i2c_bus(const i2c_config_t *cfg);
 esp_err_t i2c_probe(uint8_t addr);
 esp_err_t i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len);

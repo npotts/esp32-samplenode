@@ -1,3 +1,4 @@
+#include "shared-data.h"
 #include "wxsensors.h"
 
 static const char *TAG = "wxsensors";
@@ -7,6 +8,7 @@ static gpio_num_t i2c_gpio_scl = 22;
 static uint32_t i2c_frequency = 100000;
 static i2c_port_t i2c_port = I2C_NUM_0;
 
+struct wx_data_t weather_data;
 
 esp_err_t init_i2c_bus(const i2c_config_t *cfg) {
     esp_err_t err = i2c_driver_install(i2c_port, I2C_MODE_MASTER, 8, 8, ESP_INTR_FLAG_IRAM );
@@ -220,28 +222,53 @@ void i2c_data_init(void *parameter) {
     si7021_init();
     mpl_init();
     esp_err_t err;
-    float pressure, pt, humidity, ht;
+    float a, b;
+    char * buf = malloc(1024);
     
-    for ( ;; ) {   
-        if ( (err = mpl_read_data(&pressure, &pt)) != ESP_OK)  {
-            ESP_LOGE(TAG, "Unable to read data - %d | %s", err, esp_err_to_name(err));
-            if (err == ESP_ERR_INVALID_STATE) mpl_init();
-            continue;
-        }
-        ESP_LOGI(TAG, "Pressure = %f\t Temp = %f", pressure, pt);
+    for ( ;; ) {
+        err = mpl_read_data(&a, &b);
+        weather_data.p = update_value_f(a, err);
+        weather_data.pt = update_value_f(b, err);
 
-        if ( (err = si7021_read_data(&humidity, &ht)) != ESP_OK)  {
-            ESP_LOGE(TAG, "Unable to read RH data - %d | %s", err, esp_err_to_name(err));
-            si7021_init();
-            continue;
+        err = si7021_read_data(&a, &b);
+        weather_data.rh = update_value_f(a, err);
+        weather_data.rht = update_value_f(b, err);
+        
+        json_wx_data_t(buf, 1024, weather_data);
+        ESP_LOGI(TAG, "%s", buf);
+        
+        //Check for odd I2C errors on Barometer
+        switch (weather_data.p.error) {
+            case ESP_OK:
+                // ESP_LOGI(TAG, "Pressure = %f\t Temp = %f", weather_data.p.sample.f, weather_data.pt.sample.f);
+                break;
+            case ESP_ERR_INVALID_STATE:
+                mpl_init();
+            default:
+                ESP_LOGE(TAG, "Unable to read data - %d | %s", weather_data.p.error, esp_err_to_name(weather_data.p.error));
         }
-        ESP_LOGI(TAG, "Humidity = %f\t Temp = %f", humidity, ht);
 
+        //Check for odd I2C errors on Barometer
+        switch (weather_data.rh.error) {
+            case ESP_OK:
+                // ESP_LOGI(TAG, "Humidity = %f\t Temp = %f", weather_data.rh.sample.f,  weather_data.rht.sample.f);
+                break;
+            case ESP_ERR_INVALID_STATE:
+                si7021_init();
+            default:
+                ESP_LOGE(TAG, "Unable to read data - %d | %s", weather_data.p.error, esp_err_to_name(weather_data.p.error));
+        }        
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
+    free(buf);
 }
 
 void wxstation_init(void) {
+    weather_data.p = update_value_f(0, true);
+    weather_data.pt = update_value_f(0, true);
+    weather_data.rh = update_value_f(0, true);
+    weather_data.rht = update_value_f(0, true);
+
     TaskHandle_t tsk;
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
