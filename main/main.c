@@ -20,12 +20,15 @@
 
 static const char *TAG = "main";
 
-void tick(void *parameter) {
-  uint32_t *ticks = (uint32_t *)(parameter);
-  ESP_LOGI(TAG, "Ticking every %d", *ticks); 
-  while(1){
-    vTaskDelay(pdMS_TO_TICKS(*ticks));
-    ESP_LOGI(TAG, "tick");
+void heartbeat(void *parameter) {
+  ESP_LOGI(TAG, "Heartbeat every %d", CONFIG_MQTT_TOPIC_HEARTBEAT_PERIOD);
+  char *buf = malloc(16);
+  for (;;) {
+    vTaskDelay(pdMS_TO_TICKS(CONFIG_MQTT_TOPIC_HEARTBEAT_PERIOD));
+    int i = snprintf(buf, 16, "%d", esp_log_timestamp());
+    if (mqtt_publish_msg(CONFIG_MQTT_TOPIC_HEARTBEAT, buf, i) == -1) {
+      ESP_LOGE(TAG, "Unable to publish heartbeat");
+    }
   }
 }
 
@@ -44,10 +47,7 @@ void setup() {
     wxstation_init();
     wifi_init_sta();
     mqtt_client_init();
-
-    // TaskHandle_t tsk;
-    // uint32_t ticker = 2000;
-    // xTaskCreate(tick,"io_task",2048, &ticker ,1,&tsk);
+    xTaskCreate(heartbeat,"heartbeat",2048, 0 ,1, 0);
 }
 
 void app_main(void) {

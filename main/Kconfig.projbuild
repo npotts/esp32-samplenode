@@ -54,9 +54,21 @@ config MQTT_TOPIC_POWER
     help
 	    MQTT topic to publish power data to
 
+config MQTT_TOPIC_HEARTBEAT
+    string "MQTT heartbeat topic to publish to"
+    default "heartbeat/wxpwr"
+    help
+	    MQTT topic to public heartbeat millis clock
+
+config MQTT_TOPIC_HEARTBEAT_PERIOD
+    int "how often to report heartbeat message (ms)"
+    default 5000
+    help
+	    How often to publish the heartbeat message
+
 config MQTT_LWT_TOPIC
     string "MQTT last will and testement"
-    default "heartbeat/wxpwr"
+    default "lwt/wxpwr"
     help
 	    MQTT last will and testement topic
 
