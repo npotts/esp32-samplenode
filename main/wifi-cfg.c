@@ -40,9 +40,8 @@ static void event_handler(void* arg, esp_event_base_t event_base,  int32_t event
 void wifi_init_sta(void) {
     s_wifi_event_group = xEventGroupCreate();
 
-    esp_log_level_set(WIFI_EVENT, ESP_LOG_VERBOSE);
-    esp_log_level_set(IP_EVENT, ESP_LOG_VERBOSE);
-
+    // esp_log_level_set(WIFI_EVENT, ESP_LOG_VERBOSE);
+    // esp_log_level_set(IP_EVENT, ESP_LOG_VERBOSE);
 
     esp_netif_init();
 

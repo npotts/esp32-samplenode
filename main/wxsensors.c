@@ -1,5 +1,6 @@
 #include "shared-data.h"
 #include "wxsensors.h"
+#include "mqtt.client.h"
 
 static const char *TAG = "wxsensors";
 
@@ -234,8 +235,9 @@ void i2c_data_init(void *parameter) {
         weather_data.rh = update_value_f(a, err);
         weather_data.rht = update_value_f(b, err);
         
-        json_wx_data_t(buf, 1024, weather_data);
-        ESP_LOGI(TAG, "%s", buf);
+        int len = json_wx_data_t(buf, 1024, weather_data);
+        mqtt_publish_msg(CONFIG_MQTT_TOPIC_WEATHER, buf, len );
+        // ESP_LOGI(TAG, "%s", buf);
         
         //Check for odd I2C errors on Barometer
         switch (weather_data.p.error) {

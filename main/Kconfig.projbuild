@@ -18,12 +18,6 @@ config ESP_MAXIMUM_RETRY
 	help
 	Maximum number of retry events
 
-config MQTT_BROKER_URL
-    string "MQTT Broker URL"
-    default "mqtt://mqtt.eclipse.org"
-    help
-	    MQTT Dial string. Something like mqtt://username:password@mqtt.eclipse.org:1884
-
 config I2C_POLL_PERIOD
     int "How often (in ms) should we request for data samples"
     default 5000
@@ -35,5 +29,41 @@ config I2C_CMD_TIMEOUT
     default 200
     help
 	    Timeout, in ms, to wait before assuming a I2C command errored out
+
+config MQTT_BROKER_URL
+    string "MQTT Broker URL"
+    default "mqtt://mqtt.eclipse.org"
+    help
+	    MQTT Dial string. Something like mqtt://username:password@mqtt.eclipse.org:1884
+
+config MQTT_CLIENT_ID
+    string "MQTT Client ID"
+    default NULL
+    help
+	    Sets the mqtt client id.  Default is to use ESP_<last3ofmac>
+
+config MQTT_TOPIC_WEATHER
+    string "MQTT weather topic to publish to"
+    default "sensor/wx"
+    help
+	    MQTT topic to publish weather sensor data to
+
+config MQTT_TOPIC_POWER
+    string "MQTT power topic to publish to"
+    default "sensor/power"
+    help
+	    MQTT topic to publish power data to
+
+config MQTT_LWT_TOPIC
+    string "MQTT last will and testement"
+    default "heartbeat/wxpwr"
+    help
+	    MQTT last will and testement topic
+
+config MQTT_LWT_MESSAGE
+    string "MQTT last will and testement message"
+    default "i r ded"
+    help
+	    MQTT last will and testement message
 
 endmenu

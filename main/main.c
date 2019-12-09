@@ -15,7 +15,19 @@
 
 #include "wifi-cfg.h"
 #include "wxsensors.h"
+#include "mqtt.client.h"
+
+
 static const char *TAG = "main";
+
+void tick(void *parameter) {
+  uint32_t *ticks = (uint32_t *)(parameter);
+  ESP_LOGI(TAG, "Ticking every %d", *ticks); 
+  while(1){
+    vTaskDelay(pdMS_TO_TICKS(*ticks));
+    ESP_LOGI(TAG, "tick");
+  }
+}
 
 void setup() {
   //Initialize NVS
@@ -31,24 +43,20 @@ void setup() {
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wxstation_init();
     wifi_init_sta();
-}
+    mqtt_client_init();
 
-void tick(void *parameter) {
-  uint32_t *ticks = (uint32_t *)(parameter);
-  ESP_LOGI(TAG, "Ticking every %d", *ticks); 
-  while(1){
-    vTaskDelay(pdMS_TO_TICKS(*ticks));
-    ESP_LOGI(TAG, "tick");
-  }
+    // TaskHandle_t tsk;
+    // uint32_t ticker = 2000;
+    // xTaskCreate(tick,"io_task",2048, &ticker ,1,&tsk);
 }
 
 void app_main(void) {
     setup();
 
-    TaskHandle_t tsk;
-    uint32_t ticker = 2000;
-    xTaskCreate(tick,"io_task",2048, &ticker ,1,&tsk);
 
+    ESP_LOGI(TAG, "[APP] Startup..");
+    ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
 
     for(;;) {
         vTaskDelay(10);
