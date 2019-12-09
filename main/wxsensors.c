@@ -31,7 +31,7 @@ esp_err_t i2c_probe(uint8_t addr) {
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, addr << 1 | I2C_MASTER_WRITE, I2C_MASTER_ACK);
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 100 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, CONFIG_I2C_CMD_TIMEOUT / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
     return ret;
 }
@@ -50,7 +50,7 @@ esp_err_t i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *data, uint8_t len) {
         i2c_master_read(cmd, data, len-1, I2C_MASTER_ACK); //all but last data point
     i2c_master_read_byte(cmd, data+len-1, I2C_MASTER_LAST_NACK); //last data bit
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, CONFIG_I2C_CMD_TIMEOUT / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
     return ret;
 }
@@ -61,7 +61,7 @@ esp_err_t i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val) {
     i2c_master_write_byte(cmd, addr << 1 | I2C_MASTER_WRITE, I2C_MASTER_ACK);
     i2c_master_write_byte(cmd, reg, I2C_MASTER_ACK);
     i2c_master_write_byte(cmd, val, I2C_MASTER_LAST_NACK);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, CONFIG_I2C_CMD_TIMEOUT / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
     return ret;
 }
@@ -72,7 +72,7 @@ esp_err_t i2c_write_data(uint8_t addr, void *data, uint8_t len) {
     i2c_master_write_byte(cmd, addr << 1 | I2C_MASTER_WRITE, I2C_MASTER_ACK);
     i2c_master_write(cmd, data, len, I2C_MASTER_ACK);
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, CONFIG_I2C_CMD_TIMEOUT / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
     return ret;
 }
@@ -85,7 +85,7 @@ esp_err_t i2c_read_data(uint8_t addr, void *data, uint8_t len) {
         i2c_master_read(cmd, data, len-1, I2C_MASTER_ACK); //all but last data point
     i2c_master_read_byte(cmd, data+len-1, I2C_MASTER_LAST_NACK); //last data bit
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, CONFIG_I2C_CMD_TIMEOUT / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
     return ret;
 }
@@ -237,13 +237,11 @@ void i2c_data_init(void *parameter) {
         
         int len = json_wx_data_t(buf, 1024, weather_data);
         mqtt_publish_msg(CONFIG_MQTT_TOPIC_WEATHER, buf, len );
-        // ESP_LOGI(TAG, "%s", buf);
+        ESP_LOGI(TAG, "Data: %s", buf);
         
         //Check for odd I2C errors on Barometer
         switch (weather_data.p.error) {
-            case ESP_OK:
-                // ESP_LOGI(TAG, "Pressure = %f\t Temp = %f", weather_data.p.sample.f, weather_data.pt.sample.f);
-                break;
+            case ESP_OK: break;
             case ESP_ERR_INVALID_STATE:
                 mpl_init();
                 // fall through
@@ -253,16 +251,14 @@ void i2c_data_init(void *parameter) {
 
         //Check for odd I2C errors on Barometer
         switch (weather_data.rh.error) {
-            case ESP_OK:
-                // ESP_LOGI(TAG, "Humidity = %f\t Temp = %f", weather_data.rh.sample.f,  weather_data.rht.sample.f);
-                break;
+            case ESP_OK: break;
             case ESP_ERR_INVALID_STATE:
                 si7021_init();
                 // fall through
             default:
                 ESP_LOGE(TAG, "Unable to read data - %d | %s", weather_data.p.error, esp_err_to_name(weather_data.p.error));
         }        
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(CONFIG_I2C_POLL_PERIOD));
     }
     free(buf);
 }
