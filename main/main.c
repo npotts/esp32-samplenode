@@ -15,6 +15,7 @@
 
 #include "wifi-cfg.h"
 #include "wxsensors.h"
+static const char *TAG = "main";
 
 void setup() {
   //Initialize NVS
@@ -28,9 +29,8 @@ void setup() {
     ESP_LOGI(TAG, "portTICK_PERIOD_MS = %d", portTICK_PERIOD_MS);
     
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
-    // wifi_init_sta();
-
     wxstation_init();
+    wifi_init_sta();
 }
 
 void tick(void *parameter) {

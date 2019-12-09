@@ -1,5 +1,5 @@
 # put here your custom config value
-menu "Example Configuration"
+menu "House Monitor Config"
 config ESP_WIFI_SSID
     string "WiFi SSID"
     default "myssid"
@@ -17,5 +17,23 @@ config ESP_MAXIMUM_RETRY
 	default 5
 	help
 	Maximum number of retry events
+
+config MQTT_BROKER_URL
+    string "MQTT Broker URL"
+    default "mqtt://mqtt.eclipse.org"
+    help
+	    MQTT Dial string. Something like mqtt://username:password@mqtt.eclipse.org:1884
+
+config I2C_POLL_PERIOD
+    int "How often (in ms) should we request for data samples"
+    default 5000
+    help
+	    Pressure, Temp, and RH sensor poll rate.  Faster will induce self-heating.
+
+config I2C_CMD_TIMEOUT
+    int "How long (ms) should we wait before assuming a I2C command failed"
+    default 200
+    help
+	    Timeout, in ms, to wait before assuming a I2C command errored out
 
 endmenu

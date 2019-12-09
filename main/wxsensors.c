@@ -244,6 +244,7 @@ void i2c_data_init(void *parameter) {
                 break;
             case ESP_ERR_INVALID_STATE:
                 mpl_init();
+                // fall through
             default:
                 ESP_LOGE(TAG, "Unable to read data - %d | %s", weather_data.p.error, esp_err_to_name(weather_data.p.error));
         }
@@ -255,6 +256,7 @@ void i2c_data_init(void *parameter) {
                 break;
             case ESP_ERR_INVALID_STATE:
                 si7021_init();
+                // fall through
             default:
                 ESP_LOGE(TAG, "Unable to read data - %d | %s", weather_data.p.error, esp_err_to_name(weather_data.p.error));
         }        
@@ -264,10 +266,10 @@ void i2c_data_init(void *parameter) {
 }
 
 void wxstation_init(void) {
-    weather_data.p = update_value_f(0, true);
-    weather_data.pt = update_value_f(0, true);
-    weather_data.rh = update_value_f(0, true);
-    weather_data.rht = update_value_f(0, true);
+    weather_data.p = update_value_f(0, ESP_OK);
+    weather_data.pt = update_value_f(0, ESP_OK);
+    weather_data.rh = update_value_f(0, ESP_OK);
+    weather_data.rht = update_value_f(0, ESP_OK);
 
     TaskHandle_t tsk;
     i2c_config_t conf = {
