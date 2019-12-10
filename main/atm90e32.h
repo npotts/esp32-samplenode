@@ -25,7 +25,9 @@ Portions Modified from https://github.com/CircuitSetup/Split-Single-Phase-Energy
     D7/13 - MOSI
 */
 
-
+#include "driver/spi_master.h"
+#include "driver/gpio.h"
+#include "esp_log.h"
 
 /* STATUS REGISTERS */
 #define ATM90E32_MeterEn 0x00 		// Metering Enable
@@ -245,88 +247,4 @@ Portions Modified from https://github.com/CircuitSetup/Split-Single-Phase-Energy
 #define ATM90E32_UangleB 0xFE		// B Voltage Phase Angle
 #define ATM90E32_UangleC 0xFF		// C Voltage Phase Angle
 
-// class ATM90E32
-// 	{
-// 	private:		
-// 		unsigned short CommEnergyIC(unsigned char RW, unsigned short address, unsigned short val);
-// 		int _cs;
-// 		unsigned short _lineFreq;
-// 		unsigned short _pgagain;
-// 		unsigned short _ugain;
-// 		unsigned short _igainA;
-// 		unsigned short _igainB;
-// 		unsigned short _igainC;
-		
-// 		int Read32Register(signed short regh_addr, signed short regl_addr);
-		
-// 	public:
-// 		/* Construct */
-// 		ATM90E32(void);
-// 		/* Destruct */
-// 		~ATM90E32(void);
-
-// 		/* Initialization Functions */	
-// 		void begin(int pin, unsigned short lineFreq, unsigned short pgagain, unsigned short ugain, unsigned short igainA, unsigned short igainB, unsigned short igainC);
-		
-// 		double CalculateVIOffset(unsigned short regh_addr, unsigned short regl_addr/*, unsigned short offset_reg*/);
-// 		double CalculatePowerOffset(unsigned short regh_addr, unsigned short regl_addr/*, unsigned short offset_reg*/);
-// 		double CalibrateVI(unsigned short reg, unsigned short actualVal);
-		
-// 		/* Main Electrical Parameters (GET)*/
-// 		double GetLineVoltageA();
-// 		double GetLineVoltageB();
-// 		double GetLineVoltageC();
-
-// 		double GetLineCurrentA();
-// 		double GetLineCurrentB();
-// 		double GetLineCurrentC();
-// 		double GetLineCurrentN();
-
-// 		double GetActivePowerA();
-// 		double GetActivePowerB();
-// 		double GetActivePowerC();
-// 		double GetTotalActivePower();
-		
-// 		double GetTotalActiveFundPower();
-// 		double GetTotalActiveHarPower();
-
-// 		double GetReactivePowerA();
-// 		double GetReactivePowerB();
-// 		double GetReactivePowerC();
-// 		double GetTotalReactivePower();
-
-// 		double GetApparentPowerA();
-// 		double GetApparentPowerB();
-// 		double GetApparentPowerC();
-// 		double GetTotalApparentPower();
-
-// 		double GetFrequency();
-
-// 		double GetPowerFactorA();
-// 		double GetPowerFactorB();
-// 		double GetPowerFactorC();
-// 		double GetTotalPowerFactor();
-
-// 		double GetPhaseA();
-// 		double GetPhaseB();
-// 		double GetPhaseC();
-
-// 		double GetTemperature();
-
-// 		/* Gain Parameters (GET)*/
-// 		double GetValueRegister(unsigned short registerRead);
-
-// 		/* Energy Consumption */
-// 		double GetImportEnergy();
-// 		double GetImportReactiveEnergy();
-// 		double GetImportApparentEnergy();
-// 		double GetExportEnergy();
-// 		double GetExportReactiveEnergy();
-
-// 		/* System Status */
-// 		unsigned short GetSysStatus0();
-// 		unsigned short GetSysStatus1();
-// 		unsigned short GetMeterStatus0();
-// 		unsigned short GetMeterStatus1();
-// 	};
-// #endif
+void atm_init(void);

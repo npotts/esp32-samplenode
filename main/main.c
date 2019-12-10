@@ -19,6 +19,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "wifi-cfg.h"
 #include "wxsensors.h"
 #include "mqtt.client.h"
+#include "atm90e32.h"
 
 
 static const char *TAG = "main";
@@ -47,10 +48,12 @@ void setup() {
     ESP_LOGI(TAG, "portTICK_PERIOD_MS = %d", portTICK_PERIOD_MS);
     
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
-    wxstation_init();
-    wifi_init_sta();
-    mqtt_client_init();
-    xTaskCreate(heartbeat,"heartbeat",2048, 0 ,1, 0);
+    atm_init();
+    // wxstation_init();
+    // wifi_init_sta();
+    // mqtt_client_init();
+    // xTaskCreate(heartbeat,"heartbeat",2048, 0 ,1, 0);
+
 }
 
 void app_main(void) {

@@ -78,4 +78,44 @@ config MQTT_LWT_MESSAGE
     help
 	    MQTT last will and testement message
 
+config ATM90E32_LINE_FREQ
+    int "Line freq constant"
+    default 4485
+    help
+        Calibration settings - 
+        Use 4485 for 60 Hz (North America)
+        Use 389 for 50 hz (rest of the world)
+
+config ATM90E32_PGAGAIN
+    int "PGA Gain"
+    default 21
+    help
+        PGA Gain.  This depends on the expected current load
+        - 0 for 10A (1x)
+        - 21 for 100A (2x)
+        - 42 for between 100A - 200A (4x)
+
+config ATM90E32_TRANSFORMER_VOLTAGE_GAIN
+    int "Calibration constant for various different AC transforms to derive voltage"
+    default 37106
+    help
+        Various calibration constants for the different styles of transformers.
+        For meter <= v1.3:
+            - 42080 - 9v AC Transformer -  Jameco 112336
+            - 32428 - 12v AC Transformer - Jameco 167151
+        For meter > v1.4:
+            - 37106 - 9v AC Transformer -  Jameco 157041
+            - 38302 - 9v AC Transformer -  Jameco 112336
+            - 29462 - 12v AC Transformer - Jameco 167151
+
+config ATM90E32_CURREMT_GAIN
+    int "Calibration constant for the different current tap sensors"
+    default 39473
+    help
+        This sets the current gain for the different set of current taps.
+            
+            - 25498 - SCT-013-000 100A/50mA
+            - 39473 - SCT-016 120A/40mA
+            - 46539 - Magnalab 100A
+
 endmenu
