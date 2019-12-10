@@ -28,6 +28,7 @@ Portions Modified from https://github.com/CircuitSetup/Split-Single-Phase-Energy
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include "shared-data.h"
 
 /* STATUS REGISTERS */
 #define ATM90E32_MeterEn 0x00 		// Metering Enable

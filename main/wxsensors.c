@@ -155,7 +155,7 @@ esp_err_t mpl_wait_for_ready() {
     free(data);
     return err;
 }
-esp_err_t mpl_read_data(float *pressure, float *temperature) {
+esp_err_t mpl_read_data(double *pressure, double *temperature) {
     esp_err_t err;
     if ((err = mpl_wait_for_ready()) != ESP_OK)
         return err;
@@ -168,11 +168,11 @@ esp_err_t mpl_read_data(float *pressure, float *temperature) {
 
 	data[2] &= 0B00110000; //Bits 5/4 represent the fractional component
 	data[2] >>= 4; //Get it right aligned
-	*pressure = ((float)(((long)data[0]<<16 | (long)data[1]<<8 | (long)data[2]) >> 6) + (float)data[2]/4.0) / 100.0;
+	*pressure = ((double)(((long)data[0]<<16 | (long)data[1]<<8 | (long)data[2]) >> 6) + (double)data[2]/4.0) / 100.0;
     
     int16_t t = (data[3] << 8  | data[4]) >> 4;
     if (t & 0x800) t |= 0xF000;
-    *temperature = (float)t / 16.0;
+    *temperature = (double)t / 16.0;
     
     free(data);
     return err;
@@ -204,7 +204,7 @@ esp_err_t si7021_init() {
     return ESP_OK;
 }
 
-esp_err_t si7021_read_data(float *humidity, float *temperature) {
+esp_err_t si7021_read_data(double *humidity, double *temperature) {
     esp_err_t err;
     uint8_t cmds[] = {SI7021_MEASRH_NOHOLD_CMD, SI7021_MEASTEMP_NOHOLD_CMD};
     uint8_t data[3];
@@ -234,7 +234,7 @@ void i2c_data_init(void *parameter) {
     si7021_init();
     mpl_init();
     esp_err_t err;
-    float a, b;
+    double a, b;
     char * buf = malloc(1024);
     
     for ( ;; ) {

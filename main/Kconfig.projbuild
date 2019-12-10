@@ -108,7 +108,7 @@ config ATM90E32_TRANSFORMER_VOLTAGE_GAIN
             - 38302 - 9v AC Transformer -  Jameco 112336
             - 29462 - 12v AC Transformer - Jameco 167151
 
-config ATM90E32_CURREMT_GAIN
+config ATM90E32_CURRENT_GAIN
     int "Calibration constant for the different current tap sensors"
     default 39473
     help

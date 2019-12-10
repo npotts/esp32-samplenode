@@ -15,8 +15,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 const char * TAG = "wx-data";
 
-sample_t update_value_f(float v, esp_err_t error) {
-	sample_t samp = { .error = error, .type = FloatSampleType, .whence = esp_log_timestamp(), .sample.f = v};
+sample_t update_value_f(double v, esp_err_t error) {
+	sample_t samp = { .error = error, .type = DoubleSampleType, .whence = esp_log_timestamp(), .sample.f = v};
 	return samp;
 }
 sample_t update_value_i(int v, esp_err_t error) {
