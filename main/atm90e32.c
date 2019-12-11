@@ -18,6 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "freertos/task.h"
 
 #include "atm90e32.h"
+#include "mqtt.client.h"
 
 static const char *TAG = "atm90e32";
 spi_device_handle_t spi_dev; 
@@ -30,7 +31,7 @@ esp_err_t spi_write_register(uint16_t address, uint16_t value) {
     struct spi_transaction_t t = { .user = NULL, .cmd = address, .flags = SPI_TRANS_USE_TXDATA, .length = 16, .rxlength = 0, .rx_buffer = NULL, .tx_buffer = NULL };
     t.tx_data[0] = value >> 8; t.tx_data[1] = value & 0xFF;
     esp_err_t err = spi_device_polling_transmit(spi_dev, &t);
-    ESP_LOGW(TAG, "Write [%d] DATA = %X-%X-%X-%X ERR=%d", address, t.tx_data[0], t.tx_data[1], t.tx_data[2], t.tx_data[3], err);    
+    // ESP_LOGW(TAG, "Write [%d] DATA = %X-%X-%X-%X ERR=%d", address, t.tx_data[0], t.tx_data[1], t.tx_data[2], t.tx_data[3], err);
     return err;
 }
 
@@ -41,7 +42,7 @@ esp_err_t spi_read_register(uint16_t address, uint16_t *data) {
     esp_err_t err = spi_device_polling_transmit(spi_dev, &t);
     uint16_t d = (t.rx_data[0] << 8) |  t.rx_data[1];
     memcpy(data, &d, 2);
-    ESP_LOGI(TAG, "Read [%x] DATA = %X-%X-%X-%X %d ERR=%d", address, t.rx_data[0], t.rx_data[1], t.rx_data[2], t.rx_data[3], d, err);
+    // ESP_LOGI(TAG, "Read [%x] DATA = %X-%X-%X-%X %d ERR=%d", address, t.rx_data[0], t.rx_data[1], t.rx_data[2], t.rx_data[3], d, err);
     return err;   
 }
 
@@ -139,7 +140,7 @@ sample_t read32Double(uint16_t addr_a, uint16_t addr_b, double multiplier) {
 }
 
 pwd_data_t pwr_data;
-
+/*sample_data fetches records from the SPI bus and spews them to MQTT*/
 void sample_data(void) {
     pwr_data.v1 = readDouble(ATM90E32_UrmsA, 0.01);
     pwr_data.v2 = readDouble(ATM90E32_UrmsC, 0.01);
@@ -151,25 +152,36 @@ void sample_data(void) {
     pwr_data.f = readDouble(ATM90E32_Freq, 0.01);
     pwr_data.w = read32Double(ATM90E32_PmeanTF, ATM90E32_PmeanTFLSB, 1.0);
     pwr_data.I = update_value_f(pwr_data.i1.sample.i + pwr_data.i2.sample.i, pwr_data.i1.error | pwr_data.i2.error );
+
+    broadcast_sample(pwr_data.v1, CONFIG_MQTT_TOPIC_POWER"/v1");
+    broadcast_sample(pwr_data.v2, CONFIG_MQTT_TOPIC_POWER "/v2");
+    broadcast_sample(pwr_data.i1, CONFIG_MQTT_TOPIC_POWER "/i1");
+    broadcast_sample(pwr_data.i2, CONFIG_MQTT_TOPIC_POWER "/i2");
+    broadcast_sample(pwr_data.I, CONFIG_MQTT_TOPIC_POWER "/I");
+    broadcast_sample(pwr_data.ap, CONFIG_MQTT_TOPIC_POWER "/ap");
+    broadcast_sample(pwr_data.pf, CONFIG_MQTT_TOPIC_POWER "/pf");
+    broadcast_sample(pwr_data.t, CONFIG_MQTT_TOPIC_POWER "/t");
+    broadcast_sample(pwr_data.f, CONFIG_MQTT_TOPIC_POWER "/f");
+    broadcast_sample(pwr_data.w, CONFIG_MQTT_TOPIC_POWER "/w");
+    ESP_LOGI(TAG, "published power data");
 }
 
-void readme(void *parameter) {
+void atm90e32_monitor(void *parameter) {
   ESP_LOGI(TAG, "ATM90E32 reading routine");
   configure_atm90e32();
   uint16_t buf;
+  char errmsg[256];
   for (;;) {
     spi_read_register(ATM90E32_MeterEn, &buf);
     if (buf != 1) {
         configure_atm90e32(); //TODO: ALert on misconfigured power measurement
+        int n = snprintf(errmsg, sizeof(errmsg), "[%d] ATM90E32 seems broken or not responding",  esp_log_timestamp());
+        if (mqtt_publish_msg(CONFIG_MQTT_TOPIC_HEARTBEAT "/pwr", errmsg, n) == -1) {
+            ESP_LOGE(TAG, "Unable to publish heartbeat");
+        }
     }
     sample_data();
-    ESP_LOGI(TAG, "VOLTS1 = %f", pwr_data.v1.sample.f);
-    ESP_LOGI(TAG, "VOLTS2 = %f", pwr_data.v2.sample.f);
-    ESP_LOGI(TAG, "I1 = %f", pwr_data.i1.sample.f);
-    ESP_LOGI(TAG, "I2 = %f", pwr_data.i2.sample.f);
-    ESP_LOGI(TAG, "T = %f", pwr_data.t.sample.f);
-    // sample_data();
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(CONFIG_PWR_POLL_PERIOD));
   }
 }
 
@@ -237,5 +249,5 @@ void atm_init(void) {
             break;
     }
     
-    xTaskCreate(readme,"atm", 2048, 0 ,1, 0);
+    xTaskCreate(atm90e32_monitor,"atm90e32", 4096, 0 ,1, 0);
 }

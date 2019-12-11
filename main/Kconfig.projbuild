@@ -24,6 +24,12 @@ config I2C_POLL_PERIOD
     help
 	    Pressure, Temp, and RH sensor poll rate.  Faster will induce self-heating.
 
+config PWR_POLL_PERIOD
+    int "How often (in ms) should we request for power sample"
+    default 3000
+    help
+	    Period at which the power meaasurments are polled.
+
 config I2C_CMD_TIMEOUT
     int "How long (ms) should we wait before assuming a I2C command failed"
     default 200
@@ -38,7 +44,7 @@ config MQTT_BROKER_URL
 
 config MQTT_CLIENT_ID
     string "MQTT Client ID"
-    default NULL
+    default "wxpwr"
     help
 	    Sets the mqtt client id.  Default is to use ESP_<last3ofmac>
 
@@ -56,7 +62,7 @@ config MQTT_TOPIC_POWER
 
 config MQTT_TOPIC_HEARTBEAT
     string "MQTT heartbeat topic to publish to"
-    default "heartbeat/wxpwr"
+    default "heartbeat"
     help
 	    MQTT topic to public heartbeat millis clock
 

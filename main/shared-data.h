@@ -38,3 +38,4 @@ sample_t update_value_i(int v, esp_err_t error);
 int json_sample_t(char * buffer, int n, sample_t t);
 int json_wx_data_t(char * buffer, int n, wx_data_t wx);
 int json_pwd_data_t(char * buffer, int n, pwd_data_t pd);
+void broadcast_sample(sample_t s, char *topic);

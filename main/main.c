@@ -26,11 +26,11 @@ static const char *TAG = "main";
 
 void heartbeat(void *parameter) {
   ESP_LOGI(TAG, "Heartbeat every %d", CONFIG_MQTT_TOPIC_HEARTBEAT_PERIOD);
-  char *buf = malloc(16);
+  char *buf = malloc(256);
   for (;;) {
     vTaskDelay(pdMS_TO_TICKS(CONFIG_MQTT_TOPIC_HEARTBEAT_PERIOD));
-    int i = snprintf(buf, 16, "%d", esp_log_timestamp());
-    if (mqtt_publish_msg(CONFIG_MQTT_TOPIC_HEARTBEAT, buf, i) == -1) {
+    int i = snprintf(buf, 256, "{\"t\":%d, \"free\":%d}", esp_log_timestamp(), esp_get_free_heap_size());
+    if (mqtt_publish_msg(CONFIG_MQTT_TOPIC_HEARTBEAT "/wxpwr", buf, i) == -1) {
       ESP_LOGE(TAG, "Unable to publish heartbeat");
     }
   }
@@ -44,15 +44,12 @@ void setup() {
       ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-
-    ESP_LOGI(TAG, "portTICK_PERIOD_MS = %d", portTICK_PERIOD_MS);
     
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+    wifi_init_sta();
+    mqtt_client_init();
     atm_init();
-    // wxstation_init();
-    // wifi_init_sta();
-    // mqtt_client_init();
-    // xTaskCreate(heartbeat,"heartbeat",2048, 0 ,1, 0);
+    wxstation_init();
+    xTaskCreate(heartbeat,"heartbeat",2048, 0 ,1, 0);
 
 }
 

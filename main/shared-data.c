@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <stdio.h>
 
 #include "shared-data.h"
+#include "mqtt.client.h"
 
 const char * TAG = "wx-data";
 
@@ -46,4 +47,12 @@ int json_wx_data_t(char * buffer, int n, wx_data_t wx) {
 	w += json_sample_t(buffer+w, n-w, wx.rht);
 	w += snprintf(buffer+w, n+w, "}");
 	return w;
+}
+
+void broadcast_sample(sample_t s, char *topic) {
+    char b[256];
+    int n = json_sample_t(b, sizeof(b), s);
+    if (mqtt_publish_msg(topic, b, n) == -1) {
+        ESP_LOGE(TAG, "Unable to publish heartbeat");
+    }
 }

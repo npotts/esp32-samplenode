@@ -131,6 +131,7 @@ esp_err_t mpl_start_measurement() {
     free(data);
     return ret;
 }
+
 esp_err_t mpl_wait_for_ready() {
     /*blocks until the status flag is set, or around 12 cycles of 50ms*/
     esp_err_t err = mpl_start_measurement();
@@ -246,9 +247,11 @@ void i2c_data_init(void *parameter) {
         weather_data.rh = update_value_f(a, err);
         weather_data.rht = update_value_f(b, err);
         
-        int len = json_wx_data_t(buf, 1024, weather_data);
-        mqtt_publish_msg(CONFIG_MQTT_TOPIC_WEATHER, buf, len );
-        ESP_LOGI(TAG, "Data: %s", buf);
+        broadcast_sample(weather_data.p, CONFIG_MQTT_TOPIC_WEATHER "/p" );
+        broadcast_sample(weather_data.pt, CONFIG_MQTT_TOPIC_WEATHER "/pt" );
+        broadcast_sample(weather_data.rh, CONFIG_MQTT_TOPIC_WEATHER "/rh" );
+        broadcast_sample(weather_data.rht, CONFIG_MQTT_TOPIC_WEATHER "/rht" );
+        ESP_LOGI(TAG, "published wx data");
         
         //Check for odd I2C errors on Barometer
         switch (weather_data.p.error) {
