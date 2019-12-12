@@ -130,6 +130,11 @@ sample_t readDouble(uint16_t addr, double multiplier) {
     esp_err_t err = spi_read_register(addr, &val);
     return update_value_f( (double)val * multiplier, err);
 }
+sample_t readInt(uint16_t addr, int divisor) {
+    uint16_t val;
+    esp_err_t err = spi_read_register(addr, &val);
+    return update_value_i( (double)val / divisor, err);
+}
 sample_t read32Double(uint16_t addr_a, uint16_t addr_b, double multiplier) {
     uint16_t val;
     esp_err_t err = spi_read_register(addr_a, &val);
@@ -144,16 +149,18 @@ pwd_data_t pwr_data;
 void sample_data(void) {
     pwr_data.v1 = readDouble(ATM90E32_UrmsA, 0.01);
     pwr_data.v2 = readDouble(ATM90E32_UrmsC, 0.01);
-    pwr_data.i1 = readDouble(ATM90E32_IrmsA, 0.01);
-    pwr_data.i2 = readDouble(ATM90E32_IrmsC, 0.01);
+    pwr_data.i1 = readDouble(ATM90E32_IrmsA, 0.001);
+    pwr_data.i2 = readDouble(ATM90E32_IrmsC, 0.001);
     pwr_data.ap = read32Double(ATM90E32_SmeanT, ATM90E32_SAmeanTLSB, 0.00032);
-    pwr_data.pf = readDouble(ATM90E32_PFmeanT, 0.001);
+    pwr_data.pf = readInt(ATM90E32_PFmeanT, 1);
+    pwr_data.pf.type = DoubleSampleType;
+    pwr_data.pf.sample.f = (double)((int)pwr_data.pf.sample.i / 1000); //signed 16bit int / 1000
     pwr_data.t = readDouble(ATM90E32_Temp, 1.0);
     pwr_data.f = readDouble(ATM90E32_Freq, 0.01);
-    pwr_data.w = read32Double(ATM90E32_PmeanTF, ATM90E32_PmeanTFLSB, 1.0);
-    pwr_data.I = update_value_f(pwr_data.i1.sample.i + pwr_data.i2.sample.i, pwr_data.i1.error | pwr_data.i2.error );
+    pwr_data.w = read32Double(ATM90E32_PmeanT, ATM90E32_PmeanTLSB, 0.00032);
+    pwr_data.I = update_value_f(pwr_data.i1.sample.f + pwr_data.i2.sample.f, pwr_data.i1.error | pwr_data.i2.error );
 
-    broadcast_sample(pwr_data.v1, CONFIG_MQTT_TOPIC_POWER"/v1");
+    broadcast_sample(pwr_data.v1, CONFIG_MQTT_TOPIC_POWER "/v1");
     broadcast_sample(pwr_data.v2, CONFIG_MQTT_TOPIC_POWER "/v2");
     broadcast_sample(pwr_data.i1, CONFIG_MQTT_TOPIC_POWER "/i1");
     broadcast_sample(pwr_data.i2, CONFIG_MQTT_TOPIC_POWER "/i2");

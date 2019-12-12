@@ -207,20 +207,21 @@ esp_err_t si7021_init() {
 
 esp_err_t si7021_read_data(double *humidity, double *temperature) {
     esp_err_t err;
-    uint8_t cmds[] = {SI7021_MEASRH_NOHOLD_CMD, SI7021_MEASTEMP_NOHOLD_CMD};
+    uint8_t cmd = {SI7021_MEASRH_NOHOLD_CMD};
     uint8_t data[3];
     *humidity = -99, *temperature = -99;
 
     //start measuring RH
-    if ((err = i2c_write_data(SI7021_ADDR, cmds, 1)) != ESP_OK) return err;
+    if ((err = i2c_write_data(SI7021_ADDR, &cmd, 1)) != ESP_OK) return err;
     vTaskDelay(pdMS_TO_TICKS(50)); //wait 50ms
 
     if ((err = i2c_read_data(SI7021_ADDR, data, 3)) != ESP_OK) return err;
     *humidity = 125 * (data[0] << 8 | data[1]) / 65546 - 6; //data[2] is a CRC
 
     //start measuring T
-    if ((err = i2c_write_data(SI7021_ADDR, cmds+1, 1)) != ESP_OK) return err;
-    vTaskDelay(pdMS_TO_TICKS(25)); //wait 25ms
+    cmd = SI7021_MEASTEMP_NOHOLD_CMD;
+    if ((err = i2c_write_data(SI7021_ADDR, &cmd, 1)) != ESP_OK) return err;
+    vTaskDelay(pdMS_TO_TICKS(50)); //wait
 
     err = i2c_read_data(SI7021_ADDR, data, 3);
     *temperature = 175.72 * (data[0] << 8 | data[1]) / 65546 - 46.85; //data[2] is a CRC
