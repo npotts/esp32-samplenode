@@ -44,8 +44,23 @@ calibration|
 |sensor/power/f|  AC Frequency |
 |sensor/power/w| Power (Watts) |
 
+# How to Build
+
+* Firstly, you need to get the [esp-idf](https://github.com/espressif/esp-idf). That is outside the realm of this manual, but is necessary to work properly.
+
+```sh
+
+source path/to/esp-idf/export.sh # get the ESP-IDF build environment
+cp sdkconfig.sample sdkconfig
+make menuconfig # Modify the build parameters (eg, Wifi SSID, Password, MQTT etc) under the "House Monitor Config"
+make -j8 #because I can
+```
+
 # Why?
 
 Do you really need to to ask that?
 
 Outside the normal `I had an itch` answers, consider the fact you are here  continuing to read this sentence; impling that you too, want to invest time tinkering in homebrewing your own tools.
+
+
+
